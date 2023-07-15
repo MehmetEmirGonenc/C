@@ -11,15 +11,12 @@ int main()
     {
         for (int i = 0; i < number; i++)
         {
-            //Checking intager
-            while (1)
+            //Checking integer
+            printf ("Value %i : ", i+1);
+            if (!scanf ("%i", &values[i]))
             {
-                printf ("Value %i : ", i+1);
-                int y = scanf ("%i", &values[i]);
-                if (y == 1)
-                {
-                    break;
-                }
+                printf("Please enter just numbers!\n");
+                return 2;
             }
         }
     } 
