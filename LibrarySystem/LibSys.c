@@ -58,7 +58,7 @@ void add_book()
     char file_name[255];
     scanf(" %s",file_name);
     //open / create file
-    FILE *input = fopen(file_name, "w+");
+    FILE *input = fopen(file_name, "r");
     if (input == NULL)
     {
         printf("File cound not found!\n");
@@ -80,11 +80,11 @@ void add_book()
     //Get new data from user
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
     printf("                   Add book \n");
+    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
 
     char book_name[255];
     printf("Book name   : "); 
     scanf(" %s", book_name);
-    printf("(%s)\n",book_name);
 
     printf("Book author : ");
     char book_author[255];
@@ -118,7 +118,19 @@ void add_book()
     }   
     //For new line
     fwrite("\n", sizeof(char), 1, temp);
-    //Close files
-    fclose(input);
+    //Close files for change format
     fclose(temp);
+    fclose(input);
+    //Write all datas temp to books
+    FILE *temp_read = fopen("tmp.txt", "r");
+    FILE *input_write = fopen(file_name, "w");
+    unsigned char bbuffer;
+    while(fread(&bbuffer, sizeof(unsigned char), 1, temp_read))
+    {
+        //printf("%i\n", buffer); //Debug
+        fwrite(&bbuffer, sizeof(unsigned char), 1, input_write);
+    }
+    //Close files
+    fclose(input_write);
+    fclose(temp_read);
 }
