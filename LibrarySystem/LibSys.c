@@ -3,6 +3,7 @@
 #include <string.h>
 
 void add_book();
+void view_books();
 
 int main()
 {
@@ -46,6 +47,11 @@ int main()
         
     ////}
     
+
+}
+
+void view_books()
+{
 
 }
 
@@ -133,4 +139,6 @@ void add_book()
     //Close files
     fclose(input_write);
     fclose(temp_read);
+    //Remove tmp.txt file
+    remove("tmp.txt");
 }
