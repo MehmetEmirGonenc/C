@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-void add_book();
 void view_books();
 void view_default(FILE *input);
+
+void add_book();
+
+void delete_book();
+
 
 int main()
 {
@@ -12,7 +16,7 @@ int main()
     while(1)
     {
         //Main menu
-        printf("###################### Main Menu ######################n");
+        printf("###################### Main Menu ###################### \n");
         printf("1) -> Books\n");
         printf("2) -> Lend Book\n");
         printf("3) -> Add Book\n");
@@ -39,7 +43,7 @@ int main()
             add_book();
         break;
         case (4):
-
+            delete_book();
         break;
         case (5):
             return 0;
@@ -135,6 +139,93 @@ void view_default(FILE *input)
     }
     printf("-----------------------------------------------------------------------\n");
     
+}
+
+void delete_book()
+{
+    //Giving information
+    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+    printf("                   Delete Book \n");
+    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n\n");
+    printf("Please, enter name of data set that you want to use (Just txt files)\n");
+    //Getting file name
+    char file_name[255];
+    scanf(" %s",file_name);
+    //open / create file
+    FILE *input = fopen(file_name, "r");
+    if (input == NULL)
+    {
+        printf("File cound not found!\n");
+        return;
+    }
+    else
+    {
+        printf("Data set opened succesfuly!\n\n");
+    }
+
+    printf("Please enter name of book that you want to delete : ");
+    char book_name[255];
+    scanf(" %s", book_name);
+    //Find book
+    int counter = 0;
+    int key = 0;
+    int out_key = 0;
+    int finded_letter = 0;
+    int line_len = 0;
+    unsigned char buffer;
+    while (fread(&buffer, sizeof(unsigned char), 1, input))
+    {
+        if (strlen(book_name) == finded_letter)
+        {
+            fseek(input, -strlen(book_name), SEEK_CUR);
+            while (fread(&buffer, sizeof(unsigned char), 1, input))
+            {
+                line_len++;
+                if (buffer == 10)
+                {
+                    out_key = 1;
+                    break;
+                }    
+            }   
+        }
+        if (out_key == 1)
+        {
+            break;
+        }
+        
+        if (book_name[counter] == buffer && key == 0)
+        {
+            finded_letter++;
+        }
+        else 
+        {
+            if (buffer == 10)
+            {
+                key = 0;
+            }
+            key = 1;
+        }
+    }
+
+    fseek(input, -line_len, SEEK_CUR); 
+    int location = ftell(input);
+    printf("%i\n",location);
+    fclose(input);
+
+    FILE *temp = fopen("tmp.txt", "w");
+    FILE *input_read = fopen(file_name, "r");
+    unsigned char tmpbuffer;
+    while (fread(&tmpbuffer, sizeof(unsigned char), 1, input_read))
+    {
+        if (ftell(input_read) == location)
+        {
+            fseek(input_read, +line_len, SEEK_CUR);
+            continue;
+        }
+        fwrite(&tmpbuffer, sizeof(unsigned char), 1, temp);   
+    }
+    fclose(temp);
+    fclose(input_read);
 }
 
 void add_book()
