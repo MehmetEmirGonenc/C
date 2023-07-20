@@ -4,18 +4,20 @@
 
 void add_book();
 void view_books();
+void view_default(FILE *input);
 
 int main()
 {
-    ////Main Loop
-    ////while(1)
-    ////{
+    //Main Loop
+    while(1)
+    {
         //Main menu
-        printf("----------------------Main Menu----------------------\n");
+        printf("###################### Main Menu ######################n");
         printf("1) -> Books\n");
         printf("2) -> Lend Book\n");
         printf("3) -> Add Book\n");
         printf("4) -> Delete Book\n");
+        printf("5) -> Exit\n");
         //Option selection
         int option = 0;
         do
@@ -28,7 +30,7 @@ int main()
         switch (option)
         {
         case (1):
-            
+            view_books();
         break;
         case (2):
 
@@ -39,20 +41,100 @@ int main()
         case (4):
 
         break;
+        case (5):
+            return 0;
+        break;
         default:
             printf("Unexpected error! \n");
             return 2;
         break;
         }
         
-    ////}
+    }
     
 
 }
 
 void view_books()
 {
+    //Giving information
+    printf("****************************Add Book****************************\n");
+    printf("Please, enter name of data set that you want to use (Just txt files)\n");
+    //Getting file name
+    char file_name[255];
+    scanf(" %s",file_name);
+    //open / create file
+    FILE *input = fopen(file_name, "r");
+    if (input == NULL)
+    {
+        printf("File cound not found!\n");
+        return;
+    }
+    else
+    {
+        printf("Data set opened succesfuly!\n");
+    }
+    //Optional sorting choices
+    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+    printf("                   View Books \n");
+    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n\n");
+    
+    printf("Sorting options : \n");
+    printf("0) -> Default\n");
+    printf("1) -> Sort as book names\n");
+    printf("2) -> Sort as author names\n");
+    printf("3) -> Sort as release date of books\n--> ");
+    int choice = -1;
+    while (choice < 0)
+    {
+        printf("Book date   : ");
+        scanf("%d", &choice);
+        while(getchar() != '\n'); 
+    }
+    switch (choice)
+    {
+    case (0):
+        view_default(input);
+    break;
+    case (1):
+        
+    break;
+    case (2):
+        
+    break;
+    case (3):
+        
+    break;
+    default:
+        break;
+    }
+}
 
+void view_default(FILE *input)
+{
+    //Print classification information details
+    printf("-----------------------------------------------------------------------\n");
+    printf("      BOOK NAME                AUTHOR NAME                RELEASE DATE\n");
+    unsigned char buffer;
+    int counter0 = 0;
+    while (fread(&buffer, sizeof(unsigned char), 1, input))
+    {
+        if(buffer == 47)
+        {
+            for (int i = 0; i < 33 - counter0; i++)
+            {
+                printf(" ");
+            } 
+            counter0 = 0;
+        }
+        else
+        {
+            printf("%c", buffer);
+            counter0++;
+        }
+    }
+    printf("-----------------------------------------------------------------------\n");
+    
 }
 
 void add_book()
