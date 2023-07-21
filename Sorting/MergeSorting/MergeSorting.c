@@ -1,3 +1,4 @@
+//Coded by : Mehmet Gönenç
 #include <math.h>
 #include <stdio.h>
 
