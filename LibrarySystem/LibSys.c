@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+long find_book(FILE *input, char book_name[255], int *lenght);
+
 void view_books();
 void view_default(FILE *input);
+
+void lend_book();
 
 void add_book();
 
@@ -16,7 +20,7 @@ int main()
     while(1)
     {
         //Main menu
-        printf("###################### Main Menu ###################### \n");
+        printf("################################ Main Menu ################################ \n");
         printf("1) -> Books\n");
         printf("2) -> Lend Book\n");
         printf("3) -> Add Book\n");
@@ -29,7 +33,7 @@ int main()
             printf("Please choice an option : ");
             scanf("%d", &option);
             while(getchar() != '\n'); 
-        } while (option < 1 || option > 4);
+        } while (option < 1 || option > 5);
         //Direction user accourding to "option"
         switch (option)
         {
@@ -117,8 +121,8 @@ void view_books()
 void view_default(FILE *input)
 {
     //Print classification information details
-    printf("-----------------------------------------------------------------------\n");
-    printf("      BOOK NAME                AUTHOR NAME                RELEASE DATE\n");
+    printf("-----------------------------------------------------------------------------------------------\n");
+    printf("      BOOK NAME                AUTHOR NAME                RELEASE DATE               LENDED\n");
     unsigned char buffer;
     int counter0 = 0;
     while (fread(&buffer, sizeof(unsigned char), 1, input))
@@ -137,8 +141,124 @@ void view_default(FILE *input)
             counter0++;
         }
     }
-    printf("-----------------------------------------------------------------------\n");
+    printf("-----------------------------------------------------------------------------------------------\n");
     
+}
+
+void lend_book()
+{
+    //Giving information
+    printf("****************************Lend Book****************************\n");
+    printf("Please, enter name of data set that you want to use (Just txt files)\n");
+    //Getting file name
+    char file_name[255];
+    scanf(" %s",file_name);
+    //open / create file
+    FILE *input = fopen(file_name, "r");
+    if (input == NULL)
+    {
+        printf("File cound not found!\n");
+        return;
+    }
+    else
+    {
+        printf("Data set opened succesfuly!\n");
+    }
+    //Take book name from user
+    char book_name[255];
+    printf("Select book that you want to owe : ");
+    scanf("%s",book_name);
+    //Find Book
+}
+
+void add_book()
+{
+    //Giving information
+    printf("****************************Add Book****************************\n");
+    printf("Please, enter name of data set that you want to use (Just txt files)\n");
+    //Getting file name
+    char file_name[255];
+    scanf(" %s",file_name);
+    //open / create file
+    FILE *input = fopen(file_name, "r");
+    if (input == NULL)
+    {
+        printf("File cound not found!\n");
+        return;
+    }
+    else
+    {
+        printf("Data set opened succesfuly!\n");
+    }
+    //Create temp for synchronize
+    FILE *temp = fopen("tmp.txt", "w");
+    //Write all datas to temp
+    unsigned char buffer;
+    while(fread(&buffer, sizeof(unsigned char), 1, input))
+    {
+        fwrite(&buffer, sizeof(unsigned char), 1, temp);
+    }
+    //Get new data from user
+    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+    printf("                   Add book \n");
+    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+
+    char book_name[255];
+    printf("Book name   : "); 
+    scanf(" %s", book_name);
+
+    printf("Book author : ");
+    char book_author[255];
+    scanf("%s", book_author);
+
+    int book_date = 0;
+    while (book_date < 1)
+    {
+        printf("Book date   : ");
+        scanf("%d", &book_date);
+        while(getchar() != '\n'); 
+    }
+    //Write data to data set
+    // "/" for seperate datas 
+    for (int i = 0; i < strlen(book_name); i++)
+    {
+        fwrite(&book_name[i], sizeof(char), 1, temp);
+    }
+    fwrite("/", sizeof(char), 1, temp);
+    for (int i = 0; i < strlen(book_author); i++)
+    {
+        fwrite(&book_author[i], sizeof(char), 1, temp);
+    }
+    fwrite("/", sizeof(char), 1, temp);
+    // int to string 
+    char date[16];
+    sprintf(date, "%d", book_date);
+    for (int i = 0; i < strlen(date); i++)
+    {
+        fwrite(&date[i], sizeof(char), 1, temp);
+    }  
+    //Write lended or not information 
+    fwrite("/", sizeof(char), 1, temp);
+    fwrite("0", sizeof(char), 1, temp);
+    //For new line
+    fwrite("\n", sizeof(char), 1, temp);
+    //Close files for change format
+    fclose(temp);
+    fclose(input);
+    //Write all datas temp to books
+    FILE *temp_read = fopen("tmp.txt", "r");
+    FILE *input_write = fopen(file_name, "w");
+    unsigned char bbuffer;
+    while(fread(&bbuffer, sizeof(unsigned char), 1, temp_read))
+    {
+        //printf("%i\n", buffer); //Debug
+        fwrite(&bbuffer, sizeof(unsigned char), 1, input_write);
+    }
+    //Close files
+    fclose(input_write);
+    fclose(temp_read);
+    //Remove tmp.txt file
+    remove("tmp.txt");
 }
 
 void delete_book()
@@ -166,6 +286,45 @@ void delete_book()
     printf("Please enter name of book that you want to delete : ");
     char book_name[255];
     scanf(" %s", book_name);
+    int line_len = 0;
+    long location = find_book(input, book_name, &line_len);
+    fclose(input);
+
+    //Create a tmp.txt for change main data set
+    FILE *temp = fopen("tmp.txt", "w");
+    FILE *input_read = fopen(file_name, "r");
+    //Read all values expected deleted value
+    unsigned char tmpbuffer;
+    while (fread(&tmpbuffer, sizeof(unsigned char), 1, input_read))
+    {
+        //Pass writing unwanted value
+        if (ftell(input_read) == location)
+        {
+            fseek(input_read, +line_len, SEEK_CUR);
+            continue;
+        }
+        //Write another values
+        fwrite(&tmpbuffer, sizeof(unsigned char), 1, temp);   
+    }
+    //Close all files for change formats
+    fclose(temp);
+    fclose(input_read);
+    //Open files with another formats
+    FILE *read_temp = fopen("tmp.txt", "r");
+    FILE *input_write = fopen(file_name, "w");
+    //Write all datas to "file_name" from tmp.txt
+    unsigned char write_buffer;
+    while (fread(&write_buffer, sizeof(unsigned char), 1, read_temp))
+    {
+        fwrite(&write_buffer, sizeof(unsigned char), 1, input_write);
+    }
+    fclose(read_temp);
+    fclose(input_write);
+    remove("tmp.txt");
+}
+
+long find_book(FILE *input, char book_name[255], int *lenght)
+{
     //Finding book and creating variables
     int counter = 0;
     int key = 0;
@@ -214,125 +373,6 @@ void delete_book()
     //Give start point to "location" variable
     fseek(input, -line_len, SEEK_CUR); 
     long location = ftell(input);
-    fclose(input);
-
-    //Create a tmp.txt for change main data set
-    FILE *temp = fopen("tmp.txt", "w");
-    FILE *input_read = fopen(file_name, "r");
-    //Read all values expected deleted value
-    unsigned char tmpbuffer;
-    while (fread(&tmpbuffer, sizeof(unsigned char), 1, input_read))
-    {
-        //Pass writing unwanted value
-        if (ftell(input_read) == location)
-        {
-            fseek(input_read, +line_len, SEEK_CUR);
-            continue;
-        }
-        //Write another values
-        fwrite(&tmpbuffer, sizeof(unsigned char), 1, temp);   
-    }
-    //Close all files for change formats
-    fclose(temp);
-    fclose(input_read);
-    //Open files with another formats
-    FILE *read_temp = fopen("tmp.txt", "r");
-    FILE *input_write = fopen(file_name, "w");
-    //Write all datas to "file_name" from tmp.txt
-    unsigned char write_buffer;
-    while (fread(&write_buffer, sizeof(unsigned char), 1, read_temp))
-    {
-        fwrite(&write_buffer, sizeof(unsigned char), 1, input_write);
-    }
-    fclose(read_temp);
-    fclose(input_write);
-    remove("tmp.txt");
-}
-
-void add_book()
-{
-    //Giving information
-    printf("****************************Add Book****************************\n");
-    printf("Please, enter name of data set that you want to use (Just txt files)\n");
-    //Getting file name
-    char file_name[255];
-    scanf(" %s",file_name);
-    //open / create file
-    FILE *input = fopen(file_name, "r");
-    if (input == NULL)
-    {
-        printf("File cound not found!\n");
-        return;
-    }
-    else
-    {
-        printf("Data set opened succesfuly!\n");
-    }
-    //Create temp for synchronize
-    FILE *temp = fopen("tmp.txt", "w");
-    //Write all datas to temp
-    unsigned char buffer;
-    while(fread(&buffer, sizeof(unsigned char), 1, input))
-    {
-        //printf("%i\n", buffer); //Debug
-        fwrite(&buffer, sizeof(unsigned char), 1, temp);
-    }
-    //Get new data from user
-    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
-    printf("                   Add book \n");
-    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * \n");
-
-    char book_name[255];
-    printf("Book name   : "); 
-    scanf(" %s", book_name);
-
-    printf("Book author : ");
-    char book_author[255];
-    scanf("%s", book_author);
-
-    int book_date = 0;
-    while (book_date < 1)
-    {
-        printf("Book date   : ");
-        scanf("%d", &book_date);
-        while(getchar() != '\n'); 
-    }
-    //Write data to data set
-    // "/" for seperate datas 
-    for (int i = 0; i < strlen(book_name); i++)
-    {
-        fwrite(&book_name[i], sizeof(char), 1, temp);
-    }
-    fwrite("/", sizeof(char), 1, temp);
-    for (int i = 0; i < strlen(book_author); i++)
-    {
-        fwrite(&book_author[i], sizeof(char), 1, temp);
-    }
-    fwrite("/", sizeof(char), 1, temp);
-    // int to string 
-    char date[16];
-    sprintf(date, "%d", book_date);
-    for (int i = 0; i < strlen(date); i++)
-    {
-        fwrite(&date[i], sizeof(char), 1, temp);
-    }   
-    //For new line
-    fwrite("\n", sizeof(char), 1, temp);
-    //Close files for change format
-    fclose(temp);
-    fclose(input);
-    //Write all datas temp to books
-    FILE *temp_read = fopen("tmp.txt", "r");
-    FILE *input_write = fopen(file_name, "w");
-    unsigned char bbuffer;
-    while(fread(&bbuffer, sizeof(unsigned char), 1, temp_read))
-    {
-        //printf("%i\n", buffer); //Debug
-        fwrite(&bbuffer, sizeof(unsigned char), 1, input_write);
-    }
-    //Close files
-    fclose(input_write);
-    fclose(temp_read);
-    //Remove tmp.txt file
-    remove("tmp.txt");
+    *lenght = line_len;
+    return location;
 }
