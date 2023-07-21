@@ -166,7 +166,7 @@ void delete_book()
     printf("Please enter name of book that you want to delete : ");
     char book_name[255];
     scanf(" %s", book_name);
-    //Find book
+    //Finding book and creating variables
     int counter = 0;
     int key = 0;
     int out_key = 0;
@@ -177,7 +177,7 @@ void delete_book()
     {
         if (strlen(book_name) == finded_letter)
         {
-            fseek(input, -strlen(book_name), SEEK_CUR);
+            line_len += strlen(book_name);
             while (fread(&buffer, sizeof(unsigned char), 1, input))
             {
                 line_len++;
@@ -193,9 +193,10 @@ void delete_book()
             break;
         }
         
-        if (book_name[counter] == buffer && key == 0)
+        if (book_name[counter] == (char)buffer && key == 0)
         {
             finded_letter++;
+            counter++;
         }
         else 
         {
@@ -203,29 +204,49 @@ void delete_book()
             {
                 key = 0;
             }
-            key = 1;
+            else
+            {
+                key = 1;
+            }
+            
         }
     }
-
+    //Give start point to "location" variable
     fseek(input, -line_len, SEEK_CUR); 
-    int location = ftell(input);
-    printf("%i\n",location);
+    long location = ftell(input);
     fclose(input);
 
+    //Create a tmp.txt for change main data set
     FILE *temp = fopen("tmp.txt", "w");
     FILE *input_read = fopen(file_name, "r");
+    //Read all values expected deleted value
     unsigned char tmpbuffer;
     while (fread(&tmpbuffer, sizeof(unsigned char), 1, input_read))
     {
+        //Pass writing unwanted value
         if (ftell(input_read) == location)
         {
             fseek(input_read, +line_len, SEEK_CUR);
             continue;
         }
+        //Write another values
         fwrite(&tmpbuffer, sizeof(unsigned char), 1, temp);   
     }
+    //Close all files for change formats
     fclose(temp);
     fclose(input_read);
+    //Open files with another formats
+    FILE *read_temp = fopen("tmp.txt", "r");
+    FILE *input_write = fopen(file_name, "w");
+    //Write all datas to "file_name" from tmp.txt
+    unsigned char write_buffer;
+    while (fread(&write_buffer, sizeof(unsigned char), 1, read_temp))
+    {
+        fwrite(&write_buffer, sizeof(unsigned char), 1, input_write);
+    }
+    fclose(read_temp);
+    fclose(input_write);
+    remove("tmp.txt");
 }
 
 void add_book()
