@@ -191,6 +191,7 @@ void lend_book()
     }
     fclose(temp);
     fclose(input);
+    remove("tmp.txt");
 }
 
 void add_book()
