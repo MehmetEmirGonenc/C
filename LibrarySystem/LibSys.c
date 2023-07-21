@@ -41,7 +41,7 @@ int main()
             view_books();
         break;
         case (2):
-
+            lend_book();
         break;
         case (3):
             add_book();
@@ -169,6 +169,28 @@ void lend_book()
     printf("Select book that you want to owe : ");
     scanf("%s",book_name);
     //Find Book
+    int line_len = 0;
+    long location = find_book(input, book_name, &line_len);
+    //Create tmp.txt file to change necessery values
+    FILE *temp = fopen("tmp.txt", "w");
+    //Revalue to location for second to last character of finded book(last character is "\n" so we want to find location of lended information)
+    location = location + line_len - 1;
+    //Go start of file
+    fseek(input, 0, SEEK_SET);
+    //Read input and write datas until last element of finded book(lended information)
+    unsigned char buffer;
+    while (fread(&buffer, sizeof(unsigned char), 1, input))
+    {
+
+        if (ftell(input) == location)
+        {
+            fwrite("1", sizeof(char), 1, temp);
+            continue;
+        }
+        fwrite(&buffer, sizeof(unsigned char), 1, temp);
+    }
+    fclose(temp);
+    fclose(input);
 }
 
 void add_book()
