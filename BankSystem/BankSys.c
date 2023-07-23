@@ -15,11 +15,8 @@ const int keyna = 150; //key for not alpha
 
 int main()
 {
-    char text[255] = "Hello World!";
-    crypte(text);
-    printf("%s\n", text);
-    encrypte(text);
-    printf("%s\n", text);
+    
+    
 
 }
 
@@ -69,8 +66,8 @@ char * encrypte (char text[])
                 if (key[j] == text[i])
                 {
                     text[i] = 65 + j;
+                    break;
                 }
-                
             }
         }
         else if (islower(text[i]))
@@ -80,6 +77,7 @@ char * encrypte (char text[])
                 if (key[j] == text[i] - 32)
                 {
                     text[i] = 97 + j;
+                    break;
                 }
                 
             }
