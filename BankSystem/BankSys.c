@@ -19,8 +19,7 @@ char * encrypte (char *text);
 char * encryptenum (char *text);
 
 //Functions
-void Withdraw (int location, long amount);
-void Deposit (int location, account modifiedacc);
+void overwrite (int location, account modifiedacc, int deletemode); //For deposit or Withdraw
 
 
 //Generate a key for crypting
@@ -82,7 +81,7 @@ int main(int argc, char * argv[])
             //Close files
             fclose(temp);
             fclose(accountsnew);
-            remove(temp);
+            remove("temp.txt");
         }
     }
     printf("###################### Welcome to Bank System #################################\n");
@@ -92,14 +91,14 @@ int main(int argc, char * argv[])
     int pin = 0, location; // location for account location on data set
     scanf("%li", &accNo);
     FILE *accounts = fopen("accounts.txt", "r");
-    account account;
-    while (fread(&account, sizeof(account), 1, accounts))
+    account accountbuf;
+    while (fread(&accountbuf, sizeof(account), 1, accounts))
     {
         location = ftell(accounts);
-        if (accNo == account.accountNo)
+        if (accNo == accountbuf.accountNo)
         {
-            balance = account.balance;
-            pin = account.pin;
+            balance = accountbuf.balance;
+            pin = accountbuf.pin;
             break;
         }
     }
@@ -119,47 +118,84 @@ int main(int argc, char * argv[])
         printf("Pin is not correct!\n");
         return 3;
     }
-    
-    //Interface
-    printf("---------------------------- Account Details -------------------------------------\n");
-    printf("|Account No : %li                                Balance : %li           |\n", accNo, balance);
-    printf("|  1) -> Deposit Money                                                           |\n");
-    printf("|  2) -> Withdraw Money                                                          |\n");
-    printf("|  3) -> Exit                                                                    |\n");
-    printf("|  4) -> Delete Account                                                          |\n");
-    printf("----------------------------------------------------------------------------------\n");
-    int choice = 0;
-    do
-    {
-        printf("Please enter your choice : ");
-        scanf("%i", &choice);
-        while(getchar() != '\n'); 
-    } while (choice < 1 || choice > 5);
 
-    switch (choice)
+    //Main Loop
+    while (1)
     {
-    case (1):
-        /* code */
-    break;
-    case (2):
-        /* code */
-    break;
-    case (3):
-        printf("System shutted down!\n");
-        return 0;
-    break;
-    case (4):
-        /* code */
-    break;
-    default:
+        
+        
+        //Interface
+        printf("---------------------------- Account Details -------------------------------------\n");
+        printf("|Account No : %li                                Balance : %li           |\n", accNo, balance);
+        printf("|  1) -> Deposit Money                                                           |\n");
+        printf("|  2) -> Withdraw Money                                                          |\n");
+        printf("|  3) -> Exit                                                                    |\n");
+        printf("|  4) -> Delete Account                                                          |\n");
+        printf("----------------------------------------------------------------------------------\n");
+        int choice = 0;
+        do
+        {
+            printf("Please enter your choice : ");
+            scanf("%i", &choice);
+            while(getchar() != '\n'); 
+        } while (choice < 1 || choice > 5);
+
+        //Variables
+        int amount = 0;
+        account modiacc;
+        switch (choice)
+        {
+        case (1):
+            while (amount < 1 || amount > 200000000)
+            {
+                printf("How much money that you want to deposit : ");
+                scanf("%i", &amount);
+                while(getchar() != '\n'); 
+            }
+            //Give values to modified account
+            modiacc.accountNo = accNo;
+            modiacc.pin = pin;
+            modiacc.balance = balance + amount;
+            balance += amount;
+
+            overwrite(location, modiacc, 0);
+    
         break;
+        case (2):
+
+            while (amount < 1 && amount <= balance)
+            {
+                printf("How much money that you want to withdraw : ");
+                scanf("%i", &amount);
+                while(getchar() != '\n'); 
+                if (amount > balance)
+                {
+                    printf("Not enought balance!\n");
+                }
+                
+            }
+            //Give values to modified account
+            modiacc.accountNo = accNo;
+            modiacc.pin = pin;
+            modiacc.balance = balance - amount;
+            balance -= amount;
+
+            overwrite(location, modiacc, 0);
+        break;
+        case (3):
+            printf("System shutted down!\n");
+            return 0;
+        break;
+        case (4):
+            overwrite(amount,modiacc,1);
+        break;
+        default:
+            break;
+        }
     }
 }
-void Withdraw (int location, long amount)
-{
 
-}
-void Deposit (int location, account modifiedacc)
+void overwrite (int location, account modifiedacc, int deletemode)
 {
     FILE *acc = fopen("accounts.txt", "r");
     FILE *temp = fopen("temp.txt", "w");
@@ -167,19 +203,28 @@ void Deposit (int location, account modifiedacc)
     //Write temp file
     while (fread(&buffer, sizeof(account), 1, acc))
     {
-        if(ftell(acc) == location- sizeof(account))
+        if(ftell(acc) == location - sizeof(account))
         {
+            if (deletemode == 1)
+            {
+                continue;
+            }
+            
             fwrite(&modifiedacc, sizeof(account), 1,temp);
             continue;
         }
         fwrite(&buffer, sizeof(account), 1, temp);
     }
-    //write main file by using temp file
+    fclose(temp);
+    fclose(acc);
+    //Write main file by using temp file
+    acc = fopen("accounts.txt", "w");
+    temp = fopen("temp.txt", "r");
     while (fread(&buffer, sizeof(account), 1, temp))
     {
         fwrite(&buffer, sizeof(account), 1, acc);
     }
     fclose(temp);
     fclose(acc);
-    remove(temp);
+    remove("temp.txt");
 }
