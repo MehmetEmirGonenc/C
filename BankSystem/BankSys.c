@@ -15,14 +15,15 @@ typedef struct account
 
 //Cryption functions
 char * crypte (char *text);
+char * cryptenum (char *text);
 char * encrypte (char *text);
+char * encryptenum (char *text);
 
 //Find Account
 
 
 //Generate a key for crypting
 const char key[] = "OUXEYKIAGNCTDUMRPJWQBLHZFS";
-const char keynum[] = "/é>½^'`¨~|"; //key for number
 const int keyna = 150; //key for not alpha
 
 int main()
@@ -30,16 +31,25 @@ int main()
     printf("###################### Welcome to Bank System #################################\n");
     
     //printf("Please enter an account number : ");
-    char text[255] = "Mehmet";
-    crypte(text);
+    char text[255] = "5643";
+    cryptenum(text);
     printf("%s\n", text);
-    encrypte(text);
+    encryptenum(text);
     printf("%s\n", text);
     
 
 }
 
-
+char * cryptenum (char *text)
+{
+    //Crypting for numbers
+    for (int i = 0; i < strlen(text); i++)
+    {
+        text[i] += 17;
+        text[i] = key[text[i] - 65];
+    }
+    
+}
 
 char * crypte (char text[])
 {
@@ -68,6 +78,22 @@ char * crypte (char text[])
         {
             text[i] = key[text[i] -32 - 65] + 32;
         }
+    }
+}
+
+char * encryptenum (char *text)
+{
+    for (int i = 0; i < strlen(text); i++)
+    {
+        for (int j = 0; j < 26; j++)
+        {
+            if (key[j] == text[i])
+            {
+                text[i] = 65 + j;
+                break;
+            }
+        }
+        text[i] -= 17;
     }
 }
 
