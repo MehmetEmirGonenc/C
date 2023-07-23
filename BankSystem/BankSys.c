@@ -5,25 +5,51 @@
 
 //This program has an interface and keep information crypted on txt files.
 
-//Functions
+//Type definiations
+typedef struct account
+{
+    long accountNo;
+    int pin;
+}account;
+
+
+//Cryption functions
 char * crypte (char *text);
 char * encrypte (char *text);
 
+//Find Account
+
+
 //Generate a key for crypting
 const char key[] = "OUXEYKIAGNCTDUMRPJWQBLHZFS";
+const char keynum[] = "/é>½^'`¨~|"; //key for number
 const int keyna = 150; //key for not alpha
 
 int main()
 {
+    printf("###################### Welcome to Bank System #################################\n");
     
+    //printf("Please enter an account number : ");
+    char text[255] = "Mehmet";
+    crypte(text);
+    printf("%s\n", text);
+    encrypte(text);
+    printf("%s\n", text);
     
 
 }
+
+
 
 char * crypte (char text[])
 {
     for (int i = 0; i < strlen(text); i++)
     {
+        if (isdigit(text[i]))
+        {
+            text[i] = keynum[text[i] - 48];
+            continue;
+        }
         if (!isalpha(text[i]))
         {
             if(text[i] + 150 >255)
@@ -49,6 +75,20 @@ char * encrypte (char text[])
 {
     for (int i = 0; i < strlen(text); i++)
     {
+        int keyforpass = 0;
+        for (int j = 0; j < 10; j++)
+            {
+                if (keynum[j] == text[i])
+                {
+                    text[i] = 48 + j;
+                    keyforpass = 1;
+                    break;
+                }
+            }
+        if (keyforpass = 1)
+        {
+            continue;
+        }
         if (!isalpha(text[i]))
         {
             if(text[i] + 150 >255)
