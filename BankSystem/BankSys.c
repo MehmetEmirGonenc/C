@@ -3,13 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 
-//This program has an interface and keep information crypted on txt files.
-
 //Type definiations
 typedef struct account
 {
     long accountNo;
     int pin;
+    long balance;
 }account;
 
 
@@ -19,134 +18,168 @@ char * cryptenum (char *text);
 char * encrypte (char *text);
 char * encryptenum (char *text);
 
-//Find Account
+//Functions
+void Withdraw (int location, long amount);
+void Deposit (int location, account modifiedacc);
 
 
 //Generate a key for crypting
 const char key[] = "OUXEYKIAGNCTDUMRPJWQBLHZFS";
 const int keyna = 150; //key for not alpha
 
-int main()
+int main(int argc, char * argv[])
 {
+    if (argc ==2)
+    {  
+        if (strcmp(argv[1], "admin"));
+        {
+            printf("***********************************Adding new Account**********************************\n");
+            account newAccount;
+            printf("New Account No : ");
+            scanf("%li", &newAccount.accountNo);
+            printf("New Account pin : ");
+            scanf("%i", &newAccount.pin);
+            printf("New Account Balance : ");
+            scanf("%li", &newAccount.balance);
+
+            //Create temp for overwrite data set
+
+            FILE *accountsnew = fopen("accounts.txt", "r");
+            if (accountsnew == NULL)
+            {
+                printf("Unexpected error occurred!\n");
+                return 1;
+            }
+            FILE *temp = fopen("temp.txt", "w");
+            if (temp == NULL)
+            {
+                printf("Unexpected error occurred!\n");
+                return 1;
+            }
+
+            //Write all old datas
+
+            account buffer;
+            while (fread(&buffer, sizeof(account), 1, accountsnew))
+            {
+                fwrite(&buffer, sizeof(account), 1, temp);
+            }
+            //Close files
+            fclose(temp);
+            fclose(accountsnew);
+
+            accountsnew = fopen("accounts.txt", "w");
+            temp = fopen("temp.txt", "r");
+
+            while (fread(&buffer, sizeof(account), 1, temp))
+            {
+                fwrite(&buffer, sizeof(account), 1, accountsnew);
+            }
+
+            //Write new data
+            fwrite(&newAccount, sizeof(account), 1, accountsnew);
+
+            //Close files
+            fclose(temp);
+            fclose(accountsnew);
+            remove(temp);
+        }
+    }
     printf("###################### Welcome to Bank System #################################\n");
     
-    //printf("Please enter an account number : ");
-    char text[255] = "5643";
-    cryptenum(text);
-    printf("%s\n", text);
-    encryptenum(text);
-    printf("%s\n", text);
-    
-
-}
-
-char * cryptenum (char *text)
-{
-    //Crypting for numbers
-    for (int i = 0; i < strlen(text); i++)
+    printf("Please enter an account number : ");
+    long accNo = 0, balance = 0;
+    int pin = 0, location; // location for account location on data set
+    scanf("%li", &accNo);
+    FILE *accounts = fopen("accounts.txt", "r");
+    account account;
+    while (fread(&account, sizeof(account), 1, accounts))
     {
-        text[i] += 17;
-        text[i] = key[text[i] - 65];
+        location = ftell(accounts);
+        if (accNo == account.accountNo)
+        {
+            balance = account.balance;
+            pin = account.pin;
+            break;
+        }
+    }
+    if (pin == 0)
+    {
+        printf("Account could not found!\n");
+        return 2;
+    }
+    //Close file
+    fclose(accounts);
+    //Checking pin
+    printf("Please enter your pin : ");
+    int inpin = 0;
+    scanf("%i", &inpin);
+    if (inpin != pin)
+    {
+        printf("Pin is not correct!\n");
+        return 3;
     }
     
-}
-
-char * crypte (char text[])
-{
-    for (int i = 0; i < strlen(text); i++)
+    //Interface
+    printf("---------------------------- Account Details -------------------------------------\n");
+    printf("|Account No : %li                                Balance : %li           |\n", accNo, balance);
+    printf("|  1) -> Deposit Money                                                           |\n");
+    printf("|  2) -> Withdraw Money                                                          |\n");
+    printf("|  3) -> Exit                                                                    |\n");
+    printf("|  4) -> Delete Account                                                          |\n");
+    printf("----------------------------------------------------------------------------------\n");
+    int choice = 0;
+    do
     {
-        if (isdigit(text[i]))
-        {
-            text[i] = keynum[text[i] - 48];
-            continue;
-        }
-        if (!isalpha(text[i]))
-        {
-            if(text[i] + 150 >255)
-            {
-                text[i] = text[i];
-                continue;
-            }
-            text[i] = text[i] + 150;
-            continue;
-        }
-        if (isupper(text[i]))
-        {
-            text[i] = key[text[i] - 65];
-        }
-        else if (islower(text[i]))
-        {
-            text[i] = key[text[i] -32 - 65] + 32;
-        }
+        printf("Please enter your choice : ");
+        scanf("%i", &choice);
+        while(getchar() != '\n'); 
+    } while (choice < 1 || choice > 5);
+
+    switch (choice)
+    {
+    case (1):
+        /* code */
+    break;
+    case (2):
+        /* code */
+    break;
+    case (3):
+        printf("System shutted down!\n");
+        return 0;
+    break;
+    case (4):
+        /* code */
+    break;
+    default:
+        break;
     }
 }
-
-char * encryptenum (char *text)
+void Withdraw (int location, long amount)
 {
-    for (int i = 0; i < strlen(text); i++)
-    {
-        for (int j = 0; j < 26; j++)
-        {
-            if (key[j] == text[i])
-            {
-                text[i] = 65 + j;
-                break;
-            }
-        }
-        text[i] -= 17;
-    }
+
 }
-
-char * encrypte (char text[])
+void Deposit (int location, account modifiedacc)
 {
-    for (int i = 0; i < strlen(text); i++)
+    FILE *acc = fopen("accounts.txt", "r");
+    FILE *temp = fopen("temp.txt", "w");
+    account buffer;
+    //Write temp file
+    while (fread(&buffer, sizeof(account), 1, acc))
     {
-        int keyforpass = 0;
-        for (int j = 0; j < 10; j++)
-            {
-                if (keynum[j] == text[i])
-                {
-                    text[i] = 48 + j;
-                    keyforpass = 1;
-                    break;
-                }
-            }
-        if (keyforpass = 1)
+        if(ftell(acc) == location- sizeof(account))
         {
+            fwrite(&modifiedacc, sizeof(account), 1,temp);
             continue;
         }
-        if (!isalpha(text[i]))
-        {
-            if(text[i] + 150 >255)
-            {
-                text[i] = text[i];
-                continue;
-            }
-            text[i] = text[i] - 150;
-            continue;
-        }
-        if (isupper(text[i]))
-        {
-            for (int j = 0; j < 26; j++)
-            {
-                if (key[j] == text[i])
-                {
-                    text[i] = 65 + j;
-                    break;
-                }
-            }
-        }
-        else if (islower(text[i]))
-        {
-            for (int j = 0; j < 26; j++)
-            {
-                if (key[j] == text[i] - 32)
-                {
-                    text[i] = 97 + j;
-                    break;
-                }
-                
-            }
-        }
+        fwrite(&buffer, sizeof(account), 1, temp);
     }
+    //write main file by using temp file
+    while (fread(&buffer, sizeof(account), 1, temp))
+    {
+        fwrite(&buffer, sizeof(account), 1, acc);
+    }
+    fclose(temp);
+    fclose(acc);
+    remove(temp);
 }
