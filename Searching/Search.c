@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <strings.h>
 #include <stdbool.h>
 
 //Define type
@@ -15,7 +17,7 @@ typedef struct node
 }node;
 
 //Creating hash table
-const int TN = 26;//Table number
+const unsigned int TN = 26; //Table number
 
 node *tables[TN];
 
@@ -81,7 +83,7 @@ bool search(char * word)
 
 int hash (char * word)
 {
-    return toupper(word[0]) - 65;
+    return (toupper(word[0]) - 65);
 }
 
 
@@ -97,7 +99,7 @@ bool load(char * fileName)
     while (fscanf(textFile, "%s", buffer) != EOF)
     {
         int number = hash(buffer);
-        node *tmp;
+        node *tmp = malloc(sizeof(node));
         strcpy(tmp->index, buffer);
         tmp ->next = tables[number];
         tables[number] = tmp;
